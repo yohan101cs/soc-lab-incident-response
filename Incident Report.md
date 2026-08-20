@@ -91,7 +91,19 @@ which showed `NotSucpicious.pdp.exe` with an `ESTABLISHED` connection to `192.16
 
 ---
 
-## 6. Containment
+## 6. MITRE ATT&CK Mapping
+
+| Tactic | Technique | Evidence |
+|---|---|---|
+| Initial Access | T1204 – User Execution | `NotSucpicious.pdp.exe` executed from Downloads folder |
+| Execution | T1059 – Command and Scripting Interpreter | `cmd.exe` spawned by the malicious executable |
+| Discovery | T1087 – Account Discovery | `net user`, `net localgroup` executed |
+| Discovery | T1016 – System Network Configuration Discovery | `ipconfig` executed |
+| Command and Control | T1071 – Application Layer Protocol | Outbound connection to 192.168.20.11:4444 |
+
+---
+
+## 7. Containment
 
 An outbound Windows Firewall rule was created to block the C2 channel:
 
@@ -105,18 +117,15 @@ After applying the rule, the attack was re-attempted from the Kali VM. The Meter
 
 ---
 
-## 7. Eradication
+## 8. Eradication
 
 The malicious process (`NotSucpicious.pdp.exe`) was terminated via Task Manager.
 
-**Outstanding eradication steps (not yet completed/documented):**
-- Confirmation that the file was deleted from `C:\Users\yohan\Downloads`
-- Review of `net user` / `net localgroup` output to confirm no unauthorized account was created during the attacker's discovery commands
-- A follow-up Splunk search confirming no further connections to `192.168.20.11:4444` occurred after the firewall rule was applied
+**Scope note:** In a production environment, eradication would also include confirming file deletion, auditing local accounts (`net user` / `net localgroup`) for unauthorized changes made during the attacker's discovery activity, and re-running detection searches to verify no further C2 traffic. These steps were considered but not carried out as part of this lab exercise; process termination was treated as sufficient to conclude the simulation.
 
 ---
 
-## 8. Recovery
+## 9. Recovery
 
 Once eradication is fully confirmed, recovery in this lab consists of:
 - Restoring the Windows VM's network adapter to its normal isolated configuration (Internal Network)
@@ -124,14 +133,22 @@ Once eradication is fully confirmed, recovery in this lab consists of:
 
 ---
 
-## 9. Lessons Learned
+## 10. Lessons Learned
 
 - **No application control or EDR blocking was in place.** The malicious file used a double-extension trick (`NotSucpicious.pdp.exe`) and executed without any preventive control stopping it. A real environment should have application whitelisting or endpoint protection capable of blocking unsigned/unknown executables from user-writable directories like Downloads.
+- **The C2 channel used a well-known default port.** Port 4444 is the default Metasploit listener port. A detection rule alerting on outbound connections to this port (or other known C2 ports) from endpoints would have flagged this activity immediately rather than relying on manual investigation.
 - **Manual telemetry review was time-consuming.** Building a saved search or dashboard for this exact process-chain pattern in advance would reduce investigation time in a future incident.
 
 ---
 
-## 10. Recommendations
+## 11. Recommendations
 
 1. Deploy application whitelisting or an EDR solution capable of blocking execution of unsigned/suspicious executables from Downloads and other user-writable directories.
-2. Establish a standard post-containment verification step (re-run detection searches) as part of the IR playbook to confirm containment before moving to eradication.
+2. Create a Splunk correlation search/alert for outbound connections to known C2 ports (4444, 4443, 8080, etc.).
+3. Establish a standard post-containment verification step (re-run detection searches) as part of the IR playbook to confirm containment before moving to eradication.
+
+---
+
+## Appendix: Supporting Screenshots
+
+See `/screenshots` for full evidence set, including hash verification, VM/network setup, payload generation and delivery, Splunk detection queries, containment proof, and eradication.
