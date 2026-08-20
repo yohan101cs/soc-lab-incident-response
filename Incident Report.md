@@ -131,7 +131,7 @@ Once eradication is fully confirmed, recovery in this lab consists of:
 
 ---
 
-## 11. Recommendations
+## 10. Recommendations
 
 1. Deploy application whitelisting or an EDR solution capable of blocking execution of unsigned/suspicious executables from Downloads and other user-writable directories.
 2. Establish a standard post-containment verification step (re-run detection searches) as part of the IR playbook to confirm containment before moving to eradication.
