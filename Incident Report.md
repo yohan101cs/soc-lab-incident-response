@@ -91,9 +91,19 @@ which showed `NotSucpicious.pdp.exe` with an `ESTABLISHED` connection to `192.16
 
 ---
 
+## 6. MITRE ATT&CK Mapping
+
+| Tactic | Technique | Evidence |
+|---|---|---|
+| Initial Access | T1204 – User Execution | `NotSucpicious.pdp.exe` executed from Downloads folder |
+| Execution | T1059 – Command and Scripting Interpreter | `cmd.exe` spawned by the malicious executable |
+| Discovery | T1087 – Account Discovery | `net user`, `net localgroup` executed |
+| Discovery | T1016 – System Network Configuration Discovery | `ipconfig` executed |
+| Command and Control | T1071 – Application Layer Protocol | Outbound connection to 192.168.20.11:4444 |
+
 ---
 
-## 6. Containment
+## 7. Containment
 
 An outbound Windows Firewall rule was created to block the C2 channel:
 
@@ -107,7 +117,7 @@ After applying the rule, the attack was re-attempted from the Kali VM. The Meter
 
 ---
 
-## 7. Eradication
+## 8. Eradication
 
 The malicious process (`NotSucpicious.pdp.exe`) was terminated via Task Manager.
 
@@ -115,7 +125,7 @@ The malicious process (`NotSucpicious.pdp.exe`) was terminated via Task Manager.
 
 ---
 
-## 8. Recovery
+## 9. Recovery
 
 Once eradication is fully confirmed, recovery in this lab consists of:
 - Restoring the Windows VM's network adapter to its normal isolated configuration (Internal Network)
@@ -123,7 +133,7 @@ Once eradication is fully confirmed, recovery in this lab consists of:
 
 ---
 
-## 9. Lessons Learned
+## 10. Lessons Learned
 
 - **No application control or EDR blocking was in place.** The malicious file used a double-extension trick (`NotSucpicious.pdp.exe`) and executed without any preventive control stopping it. A real environment should have application whitelisting or endpoint protection capable of blocking unsigned/unknown executables from user-writable directories like Downloads.
 - **The C2 channel used a well-known default port.** Port 4444 is the default Metasploit listener port. A detection rule alerting on outbound connections to this port (or other known C2 ports) from endpoints would have flagged this activity immediately rather than relying on manual investigation.
@@ -131,7 +141,7 @@ Once eradication is fully confirmed, recovery in this lab consists of:
 
 ---
 
-## 10. Recommendations
+## 11. Recommendations
 
 1. Deploy application whitelisting or an EDR solution capable of blocking execution of unsigned/suspicious executables from Downloads and other user-writable directories.
 2. Create a Splunk correlation search/alert for outbound connections to known C2 ports (4444, 4443, 8080, etc.).
